@@ -4,7 +4,8 @@
   "description": "Lerna add-on for only running npm scripts for packages changed since previous branch-based tag",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "version": "",
+    "postversion": "git push && git push --tags && npm publish --access public"
   },
   "bin": {
     "smartRun": "./cli.js"
