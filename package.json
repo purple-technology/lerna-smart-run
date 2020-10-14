@@ -1,0 +1,29 @@
+{
+  "name": "lerna-smart-run",
+  "version": "0.0.1",
+  "description": "Lerna add-on for only running npm scripts for packages changed since previous branch-based tag",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "smartRun": "./cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/purple-technology/lerna-smart-run.git"
+  },
+  "keywords": [
+    "lerna"
+  ],
+  "author": "Alex Drozd <adrozd@purple-technology.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/purple-technology/lerna-smart-run/issues"
+  },
+  "homepage": "https://github.com/purple-technology/lerna-smart-run#readme",
+  "dependencies": {
+    "lerna": "^3.22.1",
+    "yargs": "^16.0.3"
+  }
+}
