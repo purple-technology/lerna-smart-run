@@ -1,6 +1,6 @@
 {
   "name": "@purple/lerna-smart-run",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Lerna add-on for only running npm scripts for packages changed since previous branch-based tag",
   "main": "src/index.js",
   "scripts": {
