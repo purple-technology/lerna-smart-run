@@ -1,6 +1,0 @@
-{
-  "name": "git-utils",
-  "version": "1.0.0",
-  "description": "Utilities for working with git",
-  "main": "src/index.ts"
-}

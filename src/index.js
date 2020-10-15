@@ -5,8 +5,9 @@ const getFilteredPackages = require("@lerna/filter-options/lib/get-filtered-pack
 const Project = require("@lerna/project");
 const PackageGraph = require("@lerna/package-graph");
 const defaultOptions = require("@lerna/command/lib/default-options");
-const childProcess = require("child_process");
 const RunCommand = require("@lerna/run");
+
+const gitOperations = require("./utils/git-operations");
 
 const argv = yargs(process.argv)
   .scriptName("smartCommand")
@@ -28,72 +29,6 @@ const argv = yargs(process.argv)
     default: [],
     description: "Packages which should be executed last",
   }).argv;
-
-const getBranchName = () => {
-  return childProcess
-    .execSync("git rev-parse --abbrev-ref HEAD")
-    .toString("utf8")
-    .trim();
-};
-
-const getPreviousTag = () => {
-  try {
-    const branchName = getBranchName();
-
-    const tags = childProcess
-      .execSync(`git tag --sort=-creatordate | grep ${branchName}-`)
-      .toString("utf8")
-      .trim()
-      .split("\n");
-
-    // we sorted by DESC
-    return tags[0];
-  } catch (error) {
-    return null;
-  }
-};
-
-const buildTaggableTimeStamp = () => {
-  const now = new Date();
-
-  const year = now.getFullYear();
-  const month = `${now.getMonth() + 1}`.padStart(2, 0);
-  const day = `${now.getDate()}`.padStart(2, 0);
-  const hour = `${now.getHours()}`.padStart(2, 0);
-  const minute = `${now.getMinutes()}`.padStart(2, 0);
-  const seconds = `${now.getSeconds()}`.padStart(2, 0);
-
-  const date = `${year}${month}${day}`;
-  const time = `${hour}${minute}${seconds}`;
-
-  return `${date}T${time}`;
-};
-
-const generateNewTag = (previousTag) => {
-  try {
-    const branchName = getBranchName();
-    const timestamp = buildTaggableTimeStamp();
-
-    const tagName = `${branchName}-${timestamp}`;
-
-    childProcess
-      .execSync(`git tag ${tagName} && git push origin ${tagName}`)
-      .toString("utf8");
-
-    // remove previous tag
-    if (previousTag) {
-      console.log("Deleting previous tag");
-      childProcess
-        .execSync(
-          `git tag -d ${previousTag} && git push --delete origin ${previousTag}`
-        )
-        .toString("utf8");
-    }
-  } catch (error) {
-    console.error(error);
-    process.exit(1);
-  }
-};
 
 const runSmartCommand = async (previousTag, script) => {
   const project = new Project();
@@ -188,7 +123,7 @@ const runSmartCommand = async (previousTag, script) => {
   return runFirstPkgsChanged || otherPkgsChanged || runLastPkgsChanged;
 };
 
-const run = async () => {
+const handler = async () => {
   try {
     const script = argv["_"][2];
 
@@ -196,7 +131,7 @@ const run = async () => {
       throw new Error("The first argument must specify an npm script to run!");
     }
 
-    const previousTag = getPreviousTag();
+    const previousTag = gitOperations.getPreviousTag();
 
     let pkgsChanged = false;
 
@@ -214,17 +149,9 @@ const run = async () => {
       pkgsChanged = await runSmartCommand(previousTag, script);
     }
 
-    if (pkgsChanged) {
-      console.log("Changed packages found.");
-    } else {
-      console.log("No changed packages found.");
-    }
-
     if (argv.tagOnSuccess && (pkgsChanged || !previousTag)) {
       console.log("Pushing new tag");
-      generateNewTag(previousTag);
-    } else {
-      console.log("Not pushing new tag");
+      gitOperations.generateNewTag(previousTag);
     }
 
     process.exit(0);
@@ -234,4 +161,4 @@ const run = async () => {
   }
 };
 
-run();
+exports.handler = handler();

@@ -1,13 +1,13 @@
 const childProcess = require("child_process");
 
-export const getBranchName = () => {
+const getBranchName = () => {
   return childProcess
     .execSync("git rev-parse --abbrev-ref HEAD")
     .toString("utf8")
     .trim();
 };
 
-export const getPreviousTag = () => {
+const getPreviousTag = () => {
   try {
     const branchName = getBranchName();
 
@@ -24,7 +24,7 @@ export const getPreviousTag = () => {
   }
 };
 
-export const buildTaggableTimeStamp = () => {
+const buildTaggableTimeStamp = () => {
   const now = new Date();
 
   const year = now.getFullYear();
@@ -40,7 +40,7 @@ export const buildTaggableTimeStamp = () => {
   return `${date}T${time}`;
 };
 
-export const generateNewTag = (previousTag) => {
+const generateNewTag = (previousTag) => {
   try {
     const branchName = getBranchName();
     const timestamp = buildTaggableTimeStamp();
@@ -65,3 +65,6 @@ export const generateNewTag = (previousTag) => {
     process.exit(1);
   }
 };
+
+exports.getPreviousTag = getPreviousTag;
+exports.generateNewTag = generateNewTag;

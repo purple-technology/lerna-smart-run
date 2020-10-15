@@ -2,13 +2,13 @@
   "name": "@purple/lerna-smart-run",
   "version": "0.0.1",
   "description": "Lerna add-on for only running npm scripts for packages changed since previous branch-based tag",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "version": "",
     "postversion": "git push && git push --tags && npm publish --access public"
   },
   "bin": {
-    "smartRun": "./cli.js"
+    "smartRun": "./src/index.js"
   },
   "repository": {
     "type": "git",
