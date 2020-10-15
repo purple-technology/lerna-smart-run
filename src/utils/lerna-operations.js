@@ -3,6 +3,7 @@ const Project = require("@lerna/project");
 const PackageGraph = require("@lerna/package-graph");
 const defaultOptions = require("@lerna/command/lib/default-options");
 const RunCommand = require("@lerna/run");
+const filterPackages = require("@lerna/filter-packages");
 
 const orderPackages = async (argv, sinceRef = null) => {
   const project = new Project();
@@ -32,43 +33,38 @@ const orderPackages = async (argv, sinceRef = null) => {
     options
   );
 
-  const packagesToRunFirst = argv.runFirst;
-  const packagesToRunLast = argv.runLast;
+  const packagesToRunFirst = argv.runFirst ? argv.runFirst : [];
+  const packagesToRunLast = argv.runLast ? argv.runLast : [];
 
-  const matchedPackagesToRunFirst = filteredPackages.reduce(
-    (filtered, package) => {
-      if (packagesToRunFirst.includes(package.name)) {
-        filtered.push(package.name);
-      }
-      return filtered;
-    },
-    []
-  );
+  const matchedPackagesToRunFirst = filterPackages(
+    filteredPackages,
+    packagesToRunFirst,
+    [],
+    true,
+    true
+  ).map((pkg) => pkg.name);
 
-  const matchedPackagesToRunLast = filteredPackages.reduce(
-    (filtered, package) => {
-      if (packagesToRunLast.includes(package.name)) {
-        filtered.push(package.name);
-      }
-      return filtered;
-    },
-    []
-  );
+  const matchedPackagesToRunLast = filterPackages(
+    filteredPackages,
+    packagesToRunLast,
+    [],
+    true,
+    true
+  ).map((pkg) => pkg.name);
 
-  const otherPackagesToRun = filteredPackages.reduce((filtered, package) => {
-    if (
-      !packagesToRunFirst.includes(package.name) &&
-      !packagesToRunLast.includes(package.name)
-    ) {
-      filtered.push(package.name);
-    }
-    return filtered;
-  }, []);
+  // exclude the packages we grouped above
+  const otherPackagesToRun = filterPackages(
+    filteredPackages,
+    [],
+    [...packagesToRunFirst, ...packagesToRunLast],
+    true,
+    true
+  ).map((pkg) => pkg.name);
 
   return {
-    matchedPackagesToRunFirst: matchedPackagesToRunFirst,
-    matchedPackagesToRunLast: matchedPackagesToRunLast,
-    otherPackagesToRun: otherPackagesToRun,
+    matchedPackagesToRunFirst,
+    matchedPackagesToRunLast,
+    otherPackagesToRun,
   };
 };
 
