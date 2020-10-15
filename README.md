@@ -24,6 +24,10 @@ Pass `--runFirst <package-name>` to run the named package before the rest. This 
 for serverless monorepos where the deployment of some services rely on the finished
 deployment of another resource.
 
+Pass `--runLast <package-name>` to run the named package after the rest. This is useful
+for serverless monorepos where the deployment of some services rely on the finished
+deployment of another resource.
+
 # Disclaimer
 
 This package is in an early, experimental stage, and is likely to change dramatically

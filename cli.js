@@ -21,6 +21,12 @@ const argv = yargs(process.argv)
     type: "array",
     default: [],
     description: "Packages which should be executed first",
+  })
+  .option("runLast", {
+    alias: "l",
+    type: "array",
+    default: [],
+    description: "Packages which should be executed last",
   }).argv;
 
 const getBranchName = () => {
@@ -112,6 +118,7 @@ const runSmartCommand = async (previousTag, script) => {
   );
 
   const packagesToRunFirst = argv.runFirst;
+  const packagesToRunLast = argv.runLast;
 
   const changedPackagesToRunFirst = filteredPackages.reduce(
     (filtered, package) => {
@@ -123,18 +130,35 @@ const runSmartCommand = async (previousTag, script) => {
     []
   );
 
+  const changedPackagesToRunLast = filteredPackages.reduce(
+    (filtered, package) => {
+      if (packagesToRunLast.includes(package.name)) {
+        filtered.push(package.name);
+      }
+      return filtered;
+    },
+    []
+  );
+
   const otherPackagesToRun = filteredPackages.reduce((filtered, package) => {
-    if (!packagesToRunFirst.includes(package.name)) {
+    if (
+      !packagesToRunFirst.includes(package.name) &&
+      !packagesToRunLast.includes(package.name)
+    ) {
       filtered.push(package.name);
     }
     return filtered;
   }, []);
 
+  const defaultCmdArgs = {
+    stream: true,
+    script: script,
+  };
+
   const runFirstPkgsChanged = changedPackagesToRunFirst.length > 0;
   if (runFirstPkgsChanged) {
     const args = {
-      stream: true,
-      script: script,
+      ...defaultCmdArgs,
       scope: changedPackagesToRunFirst,
     };
 
@@ -144,16 +168,24 @@ const runSmartCommand = async (previousTag, script) => {
   const otherPkgsChanged = otherPackagesToRun.length > 0;
   if (otherPkgsChanged) {
     const args = {
-      stream: true,
-      script: script,
+      ...defaultCmdArgs,
       scope: otherPackagesToRun,
     };
 
     await new RunCommand(args);
   }
 
-  // return a bool for if there were changes or not
-  return runFirstPkgsChanged || otherPkgsChanged;
+  const runLastPkgsChanged = changedPackagesToRunLast.length > 0;
+  if (runLastPkgsChanged) {
+    const args = {
+      ...defaultCmdArgs,
+      scope: changedPackagesToRunLast,
+    };
+
+    await new RunCommand(args);
+  }
+
+  return runFirstPkgsChanged || otherPkgsChanged || runLastPkgsChanged;
 };
 
 const run = async () => {
