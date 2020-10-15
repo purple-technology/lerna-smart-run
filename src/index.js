@@ -49,7 +49,6 @@ const handler = async () => {
         "lerna-smart-run",
         `No previous tag found. Executing full ${script}`
       );
-      // If no tag exists, we can't use a smart run
       await lernaOperations.runCommand(argv, lernaArgs);
     } else {
       log.info(
@@ -70,7 +69,7 @@ const handler = async () => {
 
     process.exit(0);
   } catch (error) {
-    console.error(error);
+    log.error("lerna-smart-run", error);
     process.exit(1);
   }
 };
