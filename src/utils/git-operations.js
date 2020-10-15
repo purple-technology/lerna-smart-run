@@ -1,4 +1,5 @@
 const childProcess = require("child_process");
+const log = require("npmlog");
 
 const getBranchName = () => {
   return childProcess
@@ -53,7 +54,7 @@ const generateNewTag = (previousTag) => {
 
     // remove previous tag
     if (previousTag) {
-      console.log("Deleting previous tag");
+      log.notice("", "Deleting previous tag");
       childProcess
         .execSync(
           `git tag -d ${previousTag} && git push --delete origin ${previousTag}`
@@ -61,7 +62,7 @@ const generateNewTag = (previousTag) => {
         .toString("utf8");
     }
   } catch (error) {
-    console.error(error);
+    log.error("lerna-smart-run", error);
     process.exit(1);
   }
 };
