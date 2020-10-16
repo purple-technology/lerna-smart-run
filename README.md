@@ -8,7 +8,9 @@ This package is a glorified wrapper around ordinary `lerna run <script>` command
 but it implements a system to control the order of execution and an automated, opionated
 tagging system (based on git branches) that takes advantage of lerna's `--since` option.
 
-This package is intended for use in CI and CD pipelines.
+This package is intended for use in CI and CD pipelines, especially where sequential
+deploys are necessary, i.e., where one serverless resource needs to be deployed
+before the rest.
 
 # Usage
 
@@ -20,13 +22,8 @@ Invoke with `smartRun <npm script>`, where `<npm script>` is a script from the
 Pass `--tagOnSuccess` to generate a tag from the successful execution of the smart run.
 This tag will be used on the following execution.
 
-Pass `--runFirst <package-name>` to run the named package before the rest. This is useful
-for serverless monorepos where the deployment of some services rely on the finished
-deployment of another resource.
-
-Pass `--runLast <package-name>` to run the named package after the rest. This is useful
-for serverless monorepos where the deployment of some services rely on the finished
-deployment of another resource.
+Since command is mostly just a wrapper, see https://www.npmjs.com/package/@lerna/filter-options
+for more available flags.
 
 # Disclaimer
 

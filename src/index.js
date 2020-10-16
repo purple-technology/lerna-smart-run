@@ -2,30 +2,19 @@
 
 const yargs = require("yargs/yargs");
 const log = require("npmlog");
+const filterOptions = require("@lerna/filter-options");
 
 const gitOperations = require("./utils/git-operations");
 const lernaOperations = require("./utils/lerna-operations");
 
-const argv = yargs(process.argv)
-  .scriptName("smartCommand")
-  .option("tagOnSuccess", {
+const argv = filterOptions(
+  yargs(process.argv).scriptName("smartCommand").option("tagOnSuccess", {
     alias: "t",
     type: "boolean",
     default: false,
     description: "Create and push a git tag when the script finishes",
   })
-  .option("runFirst", {
-    alias: "f",
-    type: "array",
-    default: [],
-    description: "Packages which should be executed first",
-  })
-  .option("runLast", {
-    alias: "l",
-    type: "array",
-    default: [],
-    description: "Packages which should be executed last",
-  }).argv;
+).argv;
 
 const handler = async () => {
   try {

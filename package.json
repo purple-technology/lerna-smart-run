@@ -25,6 +25,7 @@
   "homepage": "https://github.com/purple-technology/lerna-smart-run#readme",
   "dependencies": {
     "lerna": "^3.22.1",
+    "multimatch": "^5.0.0",
     "yargs": "^16.0.3"
   }
 }

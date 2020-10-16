@@ -3,9 +3,22 @@ const Project = require("@lerna/project");
 const PackageGraph = require("@lerna/package-graph");
 const defaultOptions = require("@lerna/command/lib/default-options");
 const RunCommand = require("@lerna/run");
-const filterPackages = require("@lerna/filter-packages");
+const multimatch = require("multimatch");
 
-const orderPackages = async (argv, sinceRef = null) => {
+// copy pasted from lerna source code since not exported
+function arrify(thing) {
+  if (!thing) {
+    return [];
+  }
+
+  if (!Array.isArray(thing)) {
+    return [thing];
+  }
+
+  return thing;
+}
+
+const filterPackages = async (argv, sinceRef = null) => {
   const project = new Project();
   const packages = await project.getPackages();
 
@@ -13,9 +26,13 @@ const orderPackages = async (argv, sinceRef = null) => {
 
   const execOpts = { cwd: "." };
 
+  // We may revisit this and refactor smartRun to accept all of
+  // lerna's filter yargs and only use their defaults.
   const defaultArgs = {
     all: true,
     includeDependents: true,
+    scope: argv.scope,
+    ignore: argv.ignore,
   };
 
   const lsArgs = sinceRef
@@ -33,81 +50,29 @@ const orderPackages = async (argv, sinceRef = null) => {
     options
   );
 
-  const packagesToRunFirst = argv.runFirst ? argv.runFirst : [];
-  const packagesToRunLast = argv.runLast ? argv.runLast : [];
+  const packageNames = filteredPackages.map((pkg) => pkg.name);
 
-  const matchedPackagesToRunFirst =
-    packagesToRunFirst.length > 0
-      ? filterPackages(
-          filteredPackages,
-          packagesToRunFirst,
-          [],
-          true,
-          true
-        ).map((pkg) => pkg.name)
-      : [];
+  // includeDependents overrides ignore, but since we're aiming to
+  // support sequential deploys, we need to undo that behavior
+  const ignoreNoMatterWhat = multimatch(packageNames, arrify(argv.ignore));
 
-  const matchedPackagesToRunLast =
-    packagesToRunLast.length > 0
-      ? filterPackages(filteredPackages, packagesToRunLast, [], true, true).map(
-          (pkg) => pkg.name
-        )
-      : [];
-
-  // exclude the packages we grouped above
-  const otherPackagesToRun = filterPackages(
-    filteredPackages,
-    [],
-    [...packagesToRunFirst, ...packagesToRunLast],
-    true,
-    true
-  ).map((pkg) => pkg.name);
-
-  return {
-    matchedPackagesToRunFirst,
-    matchedPackagesToRunLast,
-    otherPackagesToRun,
-  };
+  return packageNames.filter((pkg) => !ignoreNoMatterWhat.includes(pkg));
 };
 
 const runCommand = async (argv, lernaArgs, sinceRef = null) => {
-  const {
-    matchedPackagesToRunFirst,
-    matchedPackagesToRunLast,
-    otherPackagesToRun,
-  } = await orderPackages(argv, sinceRef);
+  const packages = await filterPackages(argv, sinceRef);
 
-  const runFirstPkgsChanged = matchedPackagesToRunFirst.length > 0;
-  if (runFirstPkgsChanged) {
+  const packagesChanged = packages.length > 0;
+  if (packagesChanged) {
     const scopedArgs = {
       ...lernaArgs,
-      scope: matchedPackagesToRunFirst,
+      scope: packages,
     };
 
     await new RunCommand(scopedArgs);
   }
 
-  const otherPkgsChanged = otherPackagesToRun.length > 0;
-  if (otherPkgsChanged) {
-    const scopedArgs = {
-      ...lernaArgs,
-      scope: otherPackagesToRun,
-    };
-
-    await new RunCommand(scopedArgs);
-  }
-
-  const runLastPkgsChanged = matchedPackagesToRunLast.length > 0;
-  if (runLastPkgsChanged) {
-    const scopedArgs = {
-      ...lernaArgs,
-      scope: matchedPackagesToRunLast,
-    };
-
-    await new RunCommand(scopedArgs);
-  }
-
-  return runFirstPkgsChanged || otherPkgsChanged || runLastPkgsChanged;
+  return packagesChanged;
 };
 
 exports.runCommand = runCommand;
