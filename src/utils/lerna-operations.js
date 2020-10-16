@@ -36,21 +36,23 @@ const orderPackages = async (argv, sinceRef = null) => {
   const packagesToRunFirst = argv.runFirst ? argv.runFirst : [];
   const packagesToRunLast = argv.runLast ? argv.runLast : [];
 
-  const matchedPackagesToRunFirst = filterPackages(
-    filteredPackages,
-    packagesToRunFirst,
-    [],
-    true,
-    true
-  ).map((pkg) => pkg.name);
+  const matchedPackagesToRunFirst =
+    packagesToRunFirst.length > 0
+      ? filterPackages(
+          filteredPackages,
+          packagesToRunFirst,
+          [],
+          true,
+          true
+        ).map((pkg) => pkg.name)
+      : [];
 
-  const matchedPackagesToRunLast = filterPackages(
-    filteredPackages,
-    packagesToRunLast,
-    [],
-    true,
-    true
-  ).map((pkg) => pkg.name);
+  const matchedPackagesToRunLast =
+    packagesToRunLast.length > 0
+      ? filterPackages(filteredPackages, packagesToRunLast, [], true, true).map(
+          (pkg) => pkg.name
+        )
+      : [];
 
   // exclude the packages we grouped above
   const otherPackagesToRun = filterPackages(
