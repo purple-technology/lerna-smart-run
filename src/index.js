@@ -8,12 +8,20 @@ const gitOperations = require("./utils/git-operations");
 const lernaOperations = require("./utils/lerna-operations");
 
 const argv = filterOptions(
-  yargs(process.argv).scriptName("smartCommand").option("tagOnSuccess", {
-    alias: "t",
-    type: "boolean",
-    default: false,
-    description: "Create and push a git tag when the script finishes",
-  })
+  yargs(process.argv)
+    .scriptName("smartCommand")
+    .option("tagOnSuccess", {
+      alias: "t",
+      type: "boolean",
+      default: false,
+      description: "Create and push a git tag when the script finishes",
+    })
+    .option("deleteTagOnSuccess", {
+      alias: "d",
+      type: "boolean",
+      default: false,
+      description: "Delete the previous git tag when the script finishes",
+    })
 ).argv;
 
 const handler = async () => {
@@ -54,6 +62,11 @@ const handler = async () => {
     if (argv.tagOnSuccess && (pkgsChanged || !previousTag)) {
       log.info("lerna-smart-run", "Pushing new tag");
       gitOperations.generateNewTag(previousTag);
+    }
+
+    if (argv.deleteTagOnSuccess && previousTag) {
+      log.info("lerna-smart-run", "Deleting previous tag");
+      gitOperations.deletePreviousTag(previousTag);
     }
 
     process.exit(0);

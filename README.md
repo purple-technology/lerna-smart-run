@@ -22,6 +22,9 @@ Invoke with `smartRun <npm script>`, where `<npm script>` is a script from the
 Pass `--tagOnSuccess` to generate a tag from the successful execution of the smart run.
 This tag will be used on the following execution.
 
+Pass `--deleteTagOnSuccess` to delete the previous tag on the successful execution of
+the smart run. If there was no previous tag this has no effect.
+
 Since command is mostly just a wrapper, see https://www.npmjs.com/package/@lerna/filter-options
 for more available flags.
 

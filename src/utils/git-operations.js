@@ -41,6 +41,14 @@ const buildTaggableTimeStamp = () => {
   return `${date}T${time}`;
 };
 
+const deletePreviousTag = (previousTag) => {
+  childProcess
+    .execSync(
+      `git tag -d ${previousTag} && git push --delete origin ${previousTag}`
+    )
+    .toString("utf8");
+};
+
 const generateNewTag = (previousTag) => {
   try {
     const branchName = getBranchName();
@@ -52,14 +60,9 @@ const generateNewTag = (previousTag) => {
       .execSync(`git tag ${tagName} && git push origin ${tagName}`)
       .toString("utf8");
 
-    // remove previous tag
     if (previousTag) {
-      log.notice("", "Deleting previous tag");
-      childProcess
-        .execSync(
-          `git tag -d ${previousTag} && git push --delete origin ${previousTag}`
-        )
-        .toString("utf8");
+      log.notice("lerna-smart-run", "Deleting previous tag");
+      deletePreviousTag(previousTag);
     }
   } catch (error) {
     log.error("lerna-smart-run", error);
@@ -68,4 +71,5 @@ const generateNewTag = (previousTag) => {
 };
 
 exports.getPreviousTag = getPreviousTag;
+exports.deletePreviousTag = deletePreviousTag;
 exports.generateNewTag = generateNewTag;
