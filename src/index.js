@@ -32,6 +32,12 @@ const handler = async () => {
       throw new Error("The first argument must specify an npm script to run!");
     }
 
+    if (argv.tagOnSuccess && argv.deleteTagOnSuccess) {
+      throw new Error(
+        "Tag on success automatically deletes the previous tag. Cannot call both --tagOnSuccess and --deleteTagOnSuccess"
+      );
+    }
+
     const lernaArgs = {
       stream: true,
       script: script,
