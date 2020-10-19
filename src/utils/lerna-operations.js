@@ -4,6 +4,7 @@ const PackageGraph = require("@lerna/package-graph");
 const defaultOptions = require("@lerna/command/lib/default-options");
 const RunCommand = require("@lerna/run");
 const multimatch = require("multimatch");
+const os = require("os");
 
 // copy pasted from lerna source code since not exported
 function arrify(thing) {
@@ -67,6 +68,7 @@ const runCommand = async (argv, lernaArgs, sinceRef = null) => {
     const scopedArgs = {
       ...lernaArgs,
       scope: packages,
+      concurrency: argv["concurrency"] || os.cpus().length,
       "--": argv["--"] || [],
     };
 

@@ -3,29 +3,32 @@
 const yargs = require("yargs/yargs");
 const log = require("npmlog");
 const filterOptions = require("@lerna/filter-options");
+const globalOptions = require("@lerna/global-options");
 
 const gitOperations = require("./utils/git-operations");
 const lernaOperations = require("./utils/lerna-operations");
 
-const argv = filterOptions(
-  yargs(process.argv)
-    // this captures args after --
-    .parserConfiguration({
-      "populate--": true,
-    })
-    .scriptName("smartCommand")
-    .option("tagOnSuccess", {
-      alias: "t",
-      type: "boolean",
-      default: false,
-      description: "Create and push a git tag when the script finishes",
-    })
-    .option("deleteTagOnSuccess", {
-      alias: "d",
-      type: "boolean",
-      default: false,
-      description: "Delete the previous git tag when the script finishes",
-    })
+const argv = globalOptions(
+  filterOptions(
+    yargs(process.argv)
+      // this captures args after --
+      .parserConfiguration({
+        "populate--": true,
+      })
+      .scriptName("smartCommand")
+      .option("tagOnSuccess", {
+        alias: "t",
+        type: "boolean",
+        default: false,
+        description: "Create and push a git tag when the script finishes",
+      })
+      .option("deleteTagOnSuccess", {
+        alias: "d",
+        type: "boolean",
+        default: false,
+        description: "Delete the previous git tag when the script finishes",
+      })
+  )
 ).argv;
 
 const handler = async () => {
