@@ -37,11 +37,11 @@ const filterPackages = async (argv, sinceRef = null) => {
   };
 
   const lsArgs = sinceRef
-    ? defaultArgs
-    : {
+    ? {
         ...defaultArgs,
         since: sinceRef,
-      };
+      }
+    : defaultArgs;
 
   const options = defaultOptions(lsArgs, project.config);
 
