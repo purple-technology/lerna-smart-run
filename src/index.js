@@ -28,6 +28,12 @@ const argv = globalOptions(
         default: false,
         description: "Delete the previous git tag when the script finishes",
       })
+      .option("excludeDependents", {
+        alias: "e",
+        type: "boolean",
+        default: false,
+        description: "Exclude dependents from package collection",
+      })
   )
 ).argv;
 

@@ -31,7 +31,7 @@ const filterPackages = async (argv, sinceRef = null) => {
   // lerna's filter yargs and only use their defaults.
   const defaultArgs = {
     all: true,
-    includeDependents: true,
+    includeDependents: !argv.excludeDependents,
     scope: argv.scope,
     ignore: argv.ignore,
   };

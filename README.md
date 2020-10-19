@@ -25,8 +25,11 @@ This tag will be used on the following execution.
 Pass `--deleteTagOnSuccess` to delete the previous tag on the successful execution of
 the smart run. If there was no previous tag this has no effect.
 
+Pass `--excludeDependencies` to not include dependent packages during package collection.
+Lerna's own `--includeDependents` is otherwise always set to `true` in the wrapper.
+
 Since command is mostly just a wrapper, see https://www.npmjs.com/package/@lerna/filter-options
-for more available flags.
+for more available flags, but most are not yet implemented.
 
 # Disclaimer
 
