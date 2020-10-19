@@ -53,26 +53,59 @@ const filterPackages = async (argv, sinceRef = null) => {
 
   const packageNames = filteredPackages.map((pkg) => pkg.name);
 
-  // includeDependents overrides ignore, but since we're aiming to
-  // support sequential deploys, we need to undo that behavior
-  const ignoreNoMatterWhat = multimatch(packageNames, arrify(argv.ignore));
+  const runFirstPackages = multimatch(packageNames, arrify(argv.runFirst));
+  const runLastPackages = multimatch(packageNames, arrify(argv.runLast));
 
-  return packageNames.filter((pkg) => !ignoreNoMatterWhat.includes(pkg));
+  const otherPackages = packageNames.filter(
+    (pkg) => !runFirstPackages.includes(pkg) && !runLastPackages.includes(pkg)
+  );
+
+  return { runFirstPackages, otherPackages, runLastPackages };
 };
 
 const runCommand = async (argv, lernaArgs, sinceRef = null) => {
-  const packages = await filterPackages(argv, sinceRef);
+  const {
+    runFirstPackages,
+    otherPackages,
+    runLastPackages,
+  } = await filterPackages(argv, sinceRef);
 
-  const packagesChanged = packages.length > 0;
+  const defaultArgs = {
+    ...lernaArgs,
+    concurrency: argv["concurrency"] || os.cpus().length,
+    "--": argv["--"] || [],
+  };
+
+  const runFirstPackagesChanged = runFirstPackages.length > 0;
+  const packagesChanged = otherPackages.length > 0;
+  const runLastPackagesChanged = runLastPackages.length > 0;
+
+  if (runFirstPackagesChanged) {
+    for (const pkg of runFirstPackages) {
+      const packageArgs = {
+        ...defaultArgs,
+        scope: pkg,
+      };
+      await new RunCommand(packageArgs);
+    }
+  }
+
   if (packagesChanged) {
-    const scopedArgs = {
-      ...lernaArgs,
-      scope: packages,
-      concurrency: argv["concurrency"] || os.cpus().length,
-      "--": argv["--"] || [],
+    const packageArgs = {
+      ...defaultArgs,
+      scope: otherPackages,
     };
+    await new RunCommand(packageArgs);
+  }
 
-    await new RunCommand(scopedArgs);
+  if (runLastPackagesChanged) {
+    for (const pkg of runLastPackages) {
+      const packageArgs = {
+        ...defaultArgs,
+        scope: pkg,
+      };
+      await new RunCommand(packageArgs);
+    }
   }
 
   return packagesChanged;

@@ -28,11 +28,17 @@ const argv = globalOptions(
         default: false,
         description: "Delete the previous git tag when the script finishes",
       })
-      .option("excludeDependents", {
-        alias: "e",
-        type: "boolean",
+      .option("runFirst", {
+        alias: "f",
+        type: "string",
         default: false,
-        description: "Exclude dependents from package collection",
+        description: "Packages to run first",
+      })
+      .option("runLast", {
+        alias: "l",
+        type: "string",
+        default: false,
+        description: "Packages to run last",
       })
   )
 ).argv;
@@ -58,8 +64,6 @@ const handler = async () => {
 
     const previousTag = gitOperations.getPreviousTag();
 
-    let pkgsChanged = false;
-
     if (!previousTag) {
       log.notice(
         "lerna-smart-run",
@@ -71,14 +75,10 @@ const handler = async () => {
         "lerna-smart-run",
         `Tag ${previousTag} found. Executing smart ${script}`
       );
-      pkgsChanged = await lernaOperations.runCommand(
-        argv,
-        lernaArgs,
-        previousTag
-      );
+      await lernaOperations.runCommand(argv, lernaArgs, previousTag);
     }
 
-    if (argv.tagOnSuccess && (pkgsChanged || !previousTag)) {
+    if (argv.tagOnSuccess) {
       log.info("lerna-smart-run", "Pushing new tag");
       gitOperations.generateNewTag(previousTag);
     }
