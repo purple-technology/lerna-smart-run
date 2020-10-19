@@ -9,6 +9,10 @@ const lernaOperations = require("./utils/lerna-operations");
 
 const argv = filterOptions(
   yargs(process.argv)
+    // this captures args after --
+    .parserConfiguration({
+      "populate--": true,
+    })
     .scriptName("smartCommand")
     .option("tagOnSuccess", {
       alias: "t",

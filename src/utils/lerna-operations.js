@@ -67,6 +67,7 @@ const runCommand = async (argv, lernaArgs, sinceRef = null) => {
     const scopedArgs = {
       ...lernaArgs,
       scope: packages,
+      "--": argv["--"] || [],
     };
 
     await new RunCommand(scopedArgs);
