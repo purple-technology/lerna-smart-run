@@ -53,8 +53,26 @@ const filterPackages = async (argv, sinceRef = null) => {
 
   const packageNames = filteredPackages.map((pkg) => pkg.name);
 
-  const runFirstPackages = multimatch(packageNames, arrify(argv.runFirst));
-  const runLastPackages = multimatch(packageNames, arrify(argv.runLast));
+  // We lose order here since we go by package names, which aren't sorted the way we want
+  const unorderedRunFirstPackages = multimatch(
+    packageNames,
+    arrify(argv.runFirst)
+  );
+  const unorderedRunLastPackages = multimatch(
+    packageNames,
+    arrify(argv.runLast)
+  );
+
+  // restore specified ordering from runFirst and runLast
+  // should revisit with the above code. this is a bit wasteful
+  const runFirstPackages = arrify(argv.runFirst).reduce((filtered, pattern) => {
+    const matchedPackages = multimatch(unorderedRunFirstPackages, [pattern]);
+    return [...filtered, ...matchedPackages];
+  }, []);
+  const runLastPackages = arrify(argv.runLast).reduce((filtered, pattern) => {
+    const matchedPackages = multimatch(unorderedRunLastPackages, [pattern]);
+    return [...filtered, ...matchedPackages];
+  }, []);
 
   const otherPackages = packageNames.filter(
     (pkg) => !runFirstPackages.includes(pkg) && !runLastPackages.includes(pkg)
