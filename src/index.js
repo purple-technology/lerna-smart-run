@@ -40,11 +40,25 @@ const argv = globalOptions(
         default: false,
         description: "Packages to run last",
       })
+      .option("deleteTag", {
+        alias: "D",
+        type: "boolean",
+        default: false,
+        description: "Only delete the previous tag if it exists",
+      })
   )
 ).argv;
 
 const handler = async () => {
   try {
+    const previousTag = gitOperations.getPreviousTag();
+
+    if (argv.deleteTag) {
+      log.notice("lerna-smart-run", `Deleting previous tag and exiting`);
+      gitOperations.deletePreviousTag(previousTag);
+      process.exit(0);
+    }
+
     const script = argv["_"][2];
 
     if (!script) {
@@ -61,8 +75,6 @@ const handler = async () => {
       stream: true,
       script: script,
     };
-
-    const previousTag = gitOperations.getPreviousTag();
 
     if (!previousTag) {
       log.notice(
