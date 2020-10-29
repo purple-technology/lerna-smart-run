@@ -65,17 +65,17 @@ const filterPackages = async (argv, sinceRef = null) => {
 
   // restore specified ordering from runFirst and runLast, and pass the args themselves forwards
   // should revisit with the above code. this is a bit wasteful
-  const runFirstGlobs = arrify(argv.runFirst).reduce((filtered, pattern) => {
+  const runFirstPkgGroups = arrify(argv.runFirst).reduce((filtered, pattern) => {
     const matchedPackages = multimatch(unorderedRunFirstPackages, [pattern]);
     if (matchedPackages.length > 0) {
-      return [...filtered, pattern];
+      return [...filtered, matchedPackages];
     }
     return filtered
   }, []);
-  const runLastGlobs = arrify(argv.runLast).reduce((filtered, pattern) => {
+  const runLastPkgGroups = arrify(argv.runLast).reduce((filtered, pattern) => {
     const matchedPackages = multimatch(unorderedRunLastPackages, [pattern]);
     if (matchedPackages.length > 0) {
-      return [...filtered, pattern];
+      return [...filtered, matchedPackages];
     }
     return filtered
   }, []);
@@ -84,14 +84,14 @@ const filterPackages = async (argv, sinceRef = null) => {
     (pkg) => !unorderedRunFirstPackages.includes(pkg) && !unorderedRunLastPackages.includes(pkg)
   );
 
-  return { runFirstGlobs, otherPackages, runLastGlobs };
+  return { runFirstPkgGroups, otherPackages, runLastPkgGroups };
 };
 
 const runCommand = async (argv, lernaArgs, sinceRef = null) => {
   const {
-    runFirstGlobs,
+    runFirstPkgGroups,
     otherPackages,
-    runLastGlobs,
+    runLastPkgGroups,
   } = await filterPackages(argv, sinceRef);
 
   const defaultArgs = {
@@ -100,15 +100,15 @@ const runCommand = async (argv, lernaArgs, sinceRef = null) => {
     "--": argv["--"] || [],
   };
 
-  const runFirstPackagesChanged = runFirstGlobs.length > 0;
+  const runFirstPackagesChanged = runFirstPkgGroups.length > 0;
   const packagesChanged = otherPackages.length > 0;
-  const runLastPackagesChanged = runLastGlobs.length > 0;
+  const runLastPackagesChanged = runLastPkgGroups.length > 0;
 
   if (runFirstPackagesChanged) {
-    for (const glob of runFirstGlobs) {
+    for (const pkgGroup of runFirstPkgGroups) {
       const packageArgs = {
         ...defaultArgs,
-        scope: glob,
+        scope: pkgGroup,
       };
       await new RunCommand(packageArgs);
     }
@@ -123,10 +123,10 @@ const runCommand = async (argv, lernaArgs, sinceRef = null) => {
   }
 
   if (runLastPackagesChanged) {
-    for (const glob of runLastGlobs) {
+    for (const pkgGroup of runLastPkgGroups) {
       const packageArgs = {
         ...defaultArgs,
-        scope: glob,
+        scope: pkgGroup,
       };
       await new RunCommand(packageArgs);
     }
