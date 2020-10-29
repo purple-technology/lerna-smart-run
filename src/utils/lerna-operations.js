@@ -19,6 +19,18 @@ function arrify(thing) {
   return thing;
 }
 
+const groupSequentialPackages = (seqArgs, unorderedSeqPackages) => {
+  const seqPkgGroups = arrify(seqArgs).reduce((filtered, pattern) => {
+    const matchedPackages = multimatch(unorderedSeqPackages, [pattern]);
+    if (matchedPackages.length > 0) {
+      return [...filtered, matchedPackages];
+    }
+    return filtered
+  }, []);
+
+  return seqPkgGroups
+}
+
 const filterPackages = async (argv, sinceRef = null) => {
   const project = new Project();
   const packages = await project.getPackages();
@@ -65,20 +77,8 @@ const filterPackages = async (argv, sinceRef = null) => {
 
   // restore specified ordering from runFirst and runLast, and pass the args themselves forwards
   // should revisit with the above code. this is a bit wasteful
-  const runFirstPkgGroups = arrify(argv.runFirst).reduce((filtered, pattern) => {
-    const matchedPackages = multimatch(unorderedRunFirstPackages, [pattern]);
-    if (matchedPackages.length > 0) {
-      return [...filtered, matchedPackages];
-    }
-    return filtered
-  }, []);
-  const runLastPkgGroups = arrify(argv.runLast).reduce((filtered, pattern) => {
-    const matchedPackages = multimatch(unorderedRunLastPackages, [pattern]);
-    if (matchedPackages.length > 0) {
-      return [...filtered, matchedPackages];
-    }
-    return filtered
-  }, []);
+  const runFirstPkgGroups = groupSequentialPackages(argv.runFirst, unorderedRunFirstPackages)
+  const runLastPkgGroups = groupSequentialPackages(argv.runLast, unorderedRunLastPackages)
 
   const otherPackages = packageNames.filter(
     (pkg) => !unorderedRunFirstPackages.includes(pkg) && !unorderedRunLastPackages.includes(pkg)
