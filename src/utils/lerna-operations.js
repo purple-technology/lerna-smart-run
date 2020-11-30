@@ -136,3 +136,4 @@ const runCommand = async (argv, lernaArgs, sinceRef = null) => {
 };
 
 exports.runCommand = runCommand;
+exports.arrify = arrify;
