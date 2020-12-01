@@ -31,7 +31,7 @@ const groupSequentialPackages = (seqArgs, unorderedSeqPackages) => {
   return seqPkgGroups
 }
 
-const filterPackages = async (argv, sinceRef = null) => {
+const _findFilteredProjectPackages = async (argv, sinceRef) => {
   const project = new Project();
   const packages = await project.getPackages();
 
@@ -63,24 +63,26 @@ const filterPackages = async (argv, sinceRef = null) => {
     options
   );
 
-  const packageNames = filteredPackages.map((pkg) => pkg.name);
+  return filteredPackages
+}
 
+const orderPackages = async (packages, first, last) => {
   // We lose order here since we go by package names, which aren't sorted the way we want
   const unorderedRunFirstPackages = multimatch(
-    packageNames,
-    arrify(argv.runFirst)
+    packages,
+    arrify(first)
   );
   const unorderedRunLastPackages = multimatch(
-    packageNames,
-    arrify(argv.runLast)
+    packages,
+    arrify(last)
   );
 
   // restore specified ordering from runFirst and runLast, and pass the args themselves forwards
   // should revisit with the above code. this is a bit wasteful
-  const runFirstPkgGroups = groupSequentialPackages(argv.runFirst, unorderedRunFirstPackages)
-  const runLastPkgGroups = groupSequentialPackages(argv.runLast, unorderedRunLastPackages)
+  const runFirstPkgGroups = groupSequentialPackages(first, unorderedRunFirstPackages)
+  const runLastPkgGroups = groupSequentialPackages(last, unorderedRunLastPackages)
 
-  const otherPackages = packageNames.filter(
+  const otherPackages = packages.filter(
     (pkg) => !unorderedRunFirstPackages.includes(pkg) && !unorderedRunLastPackages.includes(pkg)
   );
 
@@ -88,11 +90,13 @@ const filterPackages = async (argv, sinceRef = null) => {
 };
 
 const runCommand = async (argv, lernaArgs, sinceRef = null) => {
+  const filteredPackages = await _findFilteredProjectPackages(argv, sinceRef)
+  const packages = filteredPackages.map((pkg) => pkg.name);
   const {
     runFirstPkgGroups,
     otherPackages,
     runLastPkgGroups,
-  } = await filterPackages(argv, sinceRef);
+  } = await orderPackages(packages, argv.runFirst, argv.runLast);
 
   const defaultArgs = {
     ...lernaArgs,
@@ -138,3 +142,4 @@ const runCommand = async (argv, lernaArgs, sinceRef = null) => {
 exports.runCommand = runCommand;
 exports.arrify = arrify;
 exports.groupSequentialPackages = groupSequentialPackages;
+exports.orderPackages = orderPackages;
