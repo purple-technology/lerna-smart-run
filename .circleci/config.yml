@@ -66,14 +66,30 @@ workflows:
   test:
     jobs:
       - test
-  release:
+  patch_release:
     jobs:
+      - approve_patch_release:
+          type: approval
+          filters: *main_branch_filter
       - patch_release:
+          requires:
+            - approve_patch_release
+          filters: *main_branch_filter
+  minor_release:
+    jobs:
+      - approve_minor_release:
           type: approval
           filters: *main_branch_filter
       - minor_release:
+          requires:
+            - approve_minor_release
+          filters: *main_branch_filter
+  major_release:
+    jobs:
+      - approve_major_release:
           type: approval
           filters: *main_branch_filter
       - major_release:
-          type: approval
+          requires:
+            - approve_major_release
           filters: *main_branch_filter
