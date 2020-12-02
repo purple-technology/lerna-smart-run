@@ -1,0 +1,34 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@0.1.13
+
+references:
+  general:
+    image: &image circleci/node:12.16.1
+  commands:
+    npm_auth: &npm_auth
+      name: NPM Auth
+      command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+    install_dependencies: &install_dependencies
+      name: Install Dependencies
+      command: npm i
+
+jobs:
+  test:
+    docker:
+      - image: *image
+    steps:
+      - checkout
+      - run: *npm_auth
+      - run: *install_dependencies
+      - run:
+          name: Run Tests
+          command: npm run test
+
+workflows:
+  version: 2
+
+  test:
+    jobs:
+      - test

@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "version": "",
-    "postversion": "git push && git push --tags && npm publish --access public"
+    "postversion": "git push && git push --tags && npm publish --access public",
+    "test": "jest --coverage --forceExit --runInBand --detectOpenHandles"
   },
   "bin": {
     "smartRun": "./src/index.js"
@@ -24,6 +25,7 @@
   },
   "homepage": "https://github.com/purple-technology/lerna-smart-run#readme",
   "dependencies": {
+    "jest": "^26.6.3",
     "lerna": "^3.22.1",
     "multimatch": "^5.0.0",
     "yargs": "^16.0.3"
