@@ -17,11 +17,6 @@ references:
     branches:
       only:
         - main
-  feature_branch_filter: &feature_branch_filter
-    branches:
-      only:
-        - /feature\/.*/
-        - /f\/.*/
 
 jobs:
   test:
@@ -42,18 +37,43 @@ jobs:
       - run: *npm_auth
       - run: *install_dependencies
       - run:
-          name: Bump version
+          name: Release patch update
           command: npm version patch
+  minor_release:
+    docker:
+      - image: *image
+    steps:
+      - checkout
+      - run: *npm_auth
+      - run: *install_dependencies
+      - run:
+          name: Release minor update
+          command: npm version minor
+  major_release:
+    docker:
+      - image: *image
+    steps:
+      - checkout
+      - run: *npm_auth
+      - run: *install_dependencies
+      - run:
+          name: Release major update
+          command: npm version major
 
 workflows:
   version: 2
 
   test:
     jobs:
-      - test:
-          filters: *feature_branch_filter
+      - test
   release:
     jobs:
       - patch_release:
+          type: approval
+          filters: *main_branch_filter
+      - minor_release:
+          type: approval
+          filters: *main_branch_filter
+      - major_release:
           type: approval
           filters: *main_branch_filter
