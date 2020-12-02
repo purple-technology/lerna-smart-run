@@ -13,6 +13,9 @@ references:
     install_dependencies: &install_dependencies
       name: Install Dependencies
       command: npm i
+    configure_git: &configure_git
+      name: Assume git identity
+      command: git config --global -l && git config --global user.email circleci@circleci && git config --global user.name CircleCI
   main_branch_filter: &main_branch_filter
     branches:
       only:
@@ -36,6 +39,7 @@ jobs:
       - checkout
       - run: *npm_auth
       - run: *install_dependencies
+      - run: *configure_git
       - run:
           name: Release patch update
           command: npm version patch
@@ -46,6 +50,7 @@ jobs:
       - checkout
       - run: *npm_auth
       - run: *install_dependencies
+      - run: *configure_git
       - run:
           name: Release minor update
           command: npm version minor
@@ -56,6 +61,7 @@ jobs:
       - checkout
       - run: *npm_auth
       - run: *install_dependencies
+      - run: *configure_git
       - run:
           name: Release major update
           command: npm version major
