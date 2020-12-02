@@ -17,6 +17,11 @@ references:
     branches:
       only:
         - main
+  feature_branch_filter: &feature_branch_filter
+    branches:
+      only:
+        - /feature\/.*/
+        - /f\/.*/
 
 jobs:
   test:
@@ -45,7 +50,8 @@ workflows:
 
   test:
     jobs:
-      - test
+      - test:
+          filters: *feature_branch_filter
   release:
     jobs:
       - patch_release:
