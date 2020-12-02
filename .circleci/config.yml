@@ -13,6 +13,10 @@ references:
     install_dependencies: &install_dependencies
       name: Install Dependencies
       command: npm i
+  main_branch_filter: &main_branch_filter
+    branches:
+      only:
+        - main
 
 jobs:
   test:
@@ -25,6 +29,16 @@ jobs:
       - run:
           name: Run Tests
           command: npm run test
+  patch_release:
+    docker:
+      - image: *image
+    steps:
+      - checkout
+      - run: *npm_auth
+      - run: *install_dependencies
+      - run:
+          name: Bump version
+          command: npm version patch
 
 workflows:
   version: 2
@@ -32,3 +46,8 @@ workflows:
   test:
     jobs:
       - test
+  release:
+    jobs:
+      - patch_release:
+          type: approval
+          filters: *main_branch_filter
