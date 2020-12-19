@@ -37,9 +37,8 @@ to this option, they're run in sequence as well. Supports glob patterns.
 Pass `--runLast` to run a package's script after any others. If multiple packages are passed
 to this option, they're run in sequence as well. Supports glob patterns.
 
-Since the `smartRun` command is mostly just a wrapper around `lerna`'s CLI, see
-https://www.npmjs.com/package/@lerna/filter-options for more available flags (most of which are
-not yet implemented in this package).
+Pass `--scope` if you want to run the command for a package even if it hasn't changed, but one of its
+dependencies has.
 
 ## Special arguments
 

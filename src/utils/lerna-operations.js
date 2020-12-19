@@ -44,8 +44,6 @@ const _findFilteredProjectPackages = async (argv, sinceRef) => {
   const defaultArgs = {
     all: true,
     includeDependents: !argv.excludeDependents,
-    scope: argv.scope,
-    ignore: argv.ignore,
   };
 
   const lsArgs = sinceRef
@@ -63,7 +61,17 @@ const _findFilteredProjectPackages = async (argv, sinceRef) => {
     options
   );
 
-  return filteredPackages
+  let packageNames = filteredPackages.map((pkg) => pkg.name);
+
+  // unlike lerna's scope command, ours will catch a package that wasn't changed
+  // if one of its dependencies changed
+  const scopedPatterns = arrify(argv.scope)
+  
+  if (scopedPatterns.length > 0) {
+    packageNames = multimatch(packageNames, scopedPatterns)
+  }
+
+  return packageNames
 }
 
 const orderPackages = async (packages, first, last) => {
@@ -90,8 +98,8 @@ const orderPackages = async (packages, first, last) => {
 };
 
 const runCommand = async (argv, lernaArgs, sinceRef = null) => {
-  const filteredPackages = await _findFilteredProjectPackages(argv, sinceRef)
-  const packages = filteredPackages.map((pkg) => pkg.name);
+  const packages = await _findFilteredProjectPackages(argv, sinceRef)
+  
   const {
     runFirstPkgGroups,
     otherPackages,
