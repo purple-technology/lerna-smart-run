@@ -79,4 +79,14 @@ describe("#lerna-smart-run", () => {
       expect(orderedPackages.runLastPkgGroups).toStrictEqual(runLastPkgGroups);
     }
   );
+
+  test.each([
+    [["package1", "package2"], {scope: "package1"}, ["package1"]],
+    [["package1", "package2"], {ignore: "package1"}, ["package2"]],
+    [["@packages/package1", "a non conformist"], {scope: "@packages/*"}, ["@packages/package1"]],
+    [["@packages/package1", "a non conformist"], {ignore: "@packages/*"}, ["a non conformist"]],
+  ])("%p with filters %p should go filter down to %s", (packages, argv, filtered) => {
+    const result = lernaOperations.accountForFineTuning(packages, argv);
+    expect(result).toStrictEqual(filtered);
+  });
 });

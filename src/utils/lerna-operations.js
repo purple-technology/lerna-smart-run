@@ -19,6 +19,10 @@ function arrify(thing) {
   return thing;
 }
 
+function negate(patterns) {
+  return arrify(patterns).map(pattern => `!${pattern}`);
+}
+
 const groupSequentialPackages = (seqArgs, unorderedSeqPackages) => {
   const seqPkgGroups = arrify(seqArgs).reduce((filtered, pattern) => {
     const matchedPackages = multimatch(unorderedSeqPackages, [pattern]);
@@ -61,17 +65,30 @@ const _findFilteredProjectPackages = async (argv, sinceRef) => {
     options
   );
 
-  let packageNames = filteredPackages.map((pkg) => pkg.name);
+  const packageNames = filteredPackages.map((pkg) => pkg.name);
 
+  return accountForFineTuning(packageNames, argv)
+}
+
+const accountForFineTuning = (packages, argv) => {
   // unlike lerna's scope command, ours will catch a package that wasn't changed
   // if one of its dependencies changed
   const scopedPatterns = arrify(argv.scope)
   
   if (scopedPatterns.length > 0) {
-    packageNames = multimatch(packageNames, scopedPatterns)
+    packages = multimatch(packages, scopedPatterns)
   }
 
-  return packageNames
+  const ignoredPatterns = negate(argv.ignore)
+
+  if (scopedPatterns.length < 1) {
+    ignoredPatterns.unshift("**");
+  }
+
+  if (ignoredPatterns.length > 0) {
+    packages = multimatch(packages, ignoredPatterns)
+  }
+  return packages
 }
 
 const orderPackages = async (packages, first, last) => {
@@ -151,3 +168,4 @@ exports.runCommand = runCommand;
 exports.arrify = arrify;
 exports.groupSequentialPackages = groupSequentialPackages;
 exports.orderPackages = orderPackages;
+exports.accountForFineTuning = accountForFineTuning;
