@@ -54,6 +54,10 @@ const handler = async () => {
     const previousTag = gitOperations.getPreviousTag();
 
     if (argv.deleteTag) {
+      if (!previousTag) {
+        log.warn("lerna-smart-run", "No previous tag. Skipping")
+        process.exit(0);
+      }
       log.notice("lerna-smart-run", `Deleting previous tag and exiting`);
       gitOperations.deletePreviousTag(previousTag);
       process.exit(0);
