@@ -2,6 +2,8 @@
 
 Lerna add-on for only running npm scripts for packages changed since previous tag
 
+About: [https://blog.purple-technology.com/make-your-lerna-smarter/](https://blog.purple-technology.com/make-your-lerna-smarter/)
+
 # Background
 
 This package is a glorified wrapper around ordinary `lerna run <script>` commands,
